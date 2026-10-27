@@ -1,0 +1,28 @@
+#include <ESP8266WiFi.h>
+#include <PubSubClient.h>
+
+WiFiClient w;
+PubSubClient m(w);
+
+void setup() {
+  pinMode(2, OUTPUT);
+  WiFi.begin("123456789", "123456789");
+
+  while (WiFi.status() != WL_CONNECTED)
+    delay(500);
+
+  m.setServer("broker.emqx.io", 1883);
+
+  while (!m.connected())
+    m.connect("ESP8266_01");
+
+  m.setCallback([](char* t, byte* p, unsigned int l) {
+    digitalWrite(2, p[0] == 'O' && p[1] == 'N');
+  });
+
+  m.subscribe("AKAHS");
+}
+
+void loop() {
+  m.loop();
+}
